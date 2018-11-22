@@ -2,6 +2,7 @@
 
 mod cwd;
 mod limits;
+mod maps;
 mod mountinfo;
 mod stat;
 mod statm;

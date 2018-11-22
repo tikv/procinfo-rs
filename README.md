@@ -17,6 +17,7 @@ currently the following interfaces are provided:
 * `/proc/<pid>/cwd`
 * `/proc/<pid>/environ`
 * `/proc/<pid>/limits`
+* `/proc/<pid>/maps`
 * `/proc/<pid>/mountinfo`
 * `/proc/<pid>/stat`
 * `/proc/<pid>/statm`
