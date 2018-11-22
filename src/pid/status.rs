@@ -262,14 +262,12 @@ named!(parse_mems_allowed<Box<[u8]> >, delimited!(tag!("Mems_allowed:\t"), parse
 named!(parse_cpus_allowed_list<()>, chain!(tag!("Cpus_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 named!(parse_mems_allowed_list<()>, chain!(tag!("Mems_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 
-named!(parse_speculation_store_nypass<&[u8]>, delimited!(tag!("Speculation_Store_Bypass:\t"), not_line_ending, line_ending));
-named!(parse_voluntary_ctxt_switches<u64>,    delimited!(tag!("voluntary_ctxt_switches:\t"),    parse_u64, line_ending));
-named!(parse_nonvoluntary_ctxt_switches<u64>, delimited!(tag!("nonvoluntary_ctxt_switches:\t"), parse_u64, line_ending));
+named!(parse_speculation_store_nypass<String>, delimited!(tag!("Speculation_Store_Bypass:\t"),   parse_line, line_ending));
+named!(parse_voluntary_ctxt_switches<u64>,     delimited!(tag!("voluntary_ctxt_switches:\t"),    parse_u64,  line_ending));
+named!(parse_nonvoluntary_ctxt_switches<u64>,  delimited!(tag!("nonvoluntary_ctxt_switches:\t"), parse_u64,  line_ending));
 
 /// Parse the status format.
 fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
-    use std::str::from_utf8;
-
     let mut status: Status = Default::default();
     map!(i,
         many0!( // TODO: use a loop here instead of many0 to avoid allocating a vec.
@@ -337,7 +335,7 @@ fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
                | parse_mems_allowed_list
                | parse_voluntary_ctxt_switches    => { |value| status.voluntary_ctxt_switches    = value }
                | parse_nonvoluntary_ctxt_switches => { |value| status.nonvoluntary_ctxt_switches = value }
-               | parse_speculation_store_nypass   => { |value: &[u8]| status.speculation_store_nypass = String::from(from_utf8(value).unwrap()) }
+               | parse_speculation_store_nypass   => { |value| status.speculation_store_nypass   = value }
             )
         ),
         { |_| { status }})
