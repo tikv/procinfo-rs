@@ -7,6 +7,7 @@ use std::path::PathBuf;
 use std::{fs, ops};
 
 use libc;
+use libc::pid_t;
 use nom::{rest, space};
 
 use parsers::{map_result, parse_usize_hex, parse_u32_hex, parse_u64, parse_u64_hex};
@@ -149,8 +150,14 @@ fn maps_file<R: io::Read>(file: &mut R) -> io::Result<Vec<MemoryMapping>> {
 
 /// Returns mapped memory regions information for the process with the provided
 /// pid.
-pub fn maps(pid: libc::pid_t) -> io::Result<Vec<MemoryMapping>> {
+pub fn maps(pid: pid_t) -> io::Result<Vec<MemoryMapping>> {
     maps_file(&mut fs::File::open(format!("/proc/{}/maps", pid))?)
+}
+
+/// Returns mapped memory regions information for the process with the provided
+/// pid and tid.
+pub fn maps_task(pid: pid_t, tid: pid_t) -> io::Result<Vec<MemoryMapping>> {
+    maps_file(&mut fs::File::open(format!("/proc/{}/task/{}/maps", pid, tid))?)
 }
 
 /// Returns mapped memory regions information for the current process.

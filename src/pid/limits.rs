@@ -17,7 +17,7 @@ use parsers::{
     read_to_end
 };
 
-fn parse_limit<'a, P, T>(input: &'a [u8], value_parser: P) -> IResult<&'a [u8], Limit<T>>
+fn parse_limit<P, T>(input: &[u8], value_parser: P) -> IResult<&[u8], Limit<T>>
 where P: Fn(&[u8]) -> IResult<&[u8], T> {
     let parse_field = closure!(&'a [u8], alt!(
          tag!("unlimited") => { |_| None }
@@ -160,22 +160,22 @@ pub struct Limits {
 /// Parses the provided limits file.
 fn limits_file(file: &mut File) -> Result<Limits> {
     let mut buf = [0; 2048]; // A typical limits file is about 1350 bytes
-    map_result(parse_limits(try!(read_to_end(file, &mut buf))))
+    map_result(parse_limits(read_to_end(file, &mut buf)?))
 }
 
 /// Returns resource limit information from the process with the provided pid.
 pub fn limits(pid: pid_t) -> Result<Limits> {
-    limits_file(&mut try!(File::open(&format!("/proc/{}/limits", pid))))
+    limits_file(&mut File::open(&format!("/proc/{}/limits", pid))?)
 }
 
 /// Returns resource limit information for the current process.
 pub fn limits_self() -> Result<Limits> {
-    limits_file(&mut try!(File::open("/proc/self/limits")))
+    limits_file(&mut File::open("/proc/self/limits")?)
 }
 
 /// Returns resource limit information from the thread with the provided parent process ID and thread ID.
 pub fn limits_task(process_id: pid_t, thread_id: pid_t) -> Result<Limits> {
-    limits_file(&mut try!(File::open(&format!("/proc/{}/task/{}/limits", process_id, thread_id))))
+    limits_file(&mut File::open(&format!("/proc/{}/task/{}/limits", process_id, thread_id))?)
 }
 
 #[cfg(test)]

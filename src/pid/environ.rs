@@ -90,6 +90,12 @@ pub fn environ(pid: pid_t) -> Result<Environ> {
     environ_path(format!("/proc/{}/environ", pid))
 }
 
+/// Returns initial environment for the process with the provided process id and thread id
+/// as key-value pairs.
+pub fn environ_task(pid: pid_t, tid: pid_t) -> Result<Environ> {
+    environ_path(format!("/proc/{}/task/{}/environ", pid, tid))
+}
+
 /// Returns initial environment for the current process as key-value pairs.
 pub fn environ_self() -> Result<Environ> {
     environ_path("/proc/self/environ")

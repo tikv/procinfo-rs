@@ -9,14 +9,14 @@ mod statm;
 mod status;
 mod environ;
 
-pub use pid::cwd::{cwd, cwd_self};
-pub use pid::limits::{Limit, Limits, limits, limits_self};
-pub use pid::mountinfo::{Mountinfo, mountinfo, mountinfo_self};
-pub use pid::statm::{Statm, statm, statm_self};
-pub use pid::status::{SeccompMode, Status, status, status_self};
-pub use pid::stat::{Stat, stat, stat_self};
-pub use pid::environ::{Environ, environ, environ_self};
-pub use pid::maps::{MemoryMapping, maps, maps_self};
+pub use pid::cwd::{cwd, cwd_self, cwd_task};
+pub use pid::limits::{Limit, Limits, limits, limits_self, limits_task};
+pub use pid::mountinfo::{Mountinfo, mountinfo, mountinfo_self, mountinfo_task};
+pub use pid::statm::{Statm, statm, statm_self, statm_task};
+pub use pid::status::{SeccompMode, Status, status, status_self, status_task};
+pub use pid::stat::{Stat, stat, stat_self, stat_task};
+pub use pid::environ::{Environ, environ, environ_self, environ_task};
+pub use pid::maps::{MemoryMapping, maps, maps_self, maps_task};
 
 /// The state of a process.
 #[derive(Debug, PartialEq, Eq, Hash)]

@@ -130,6 +130,10 @@ named!(pub parse_u32<u32>,
 named!(pub parse_u64<u64>,
        map_res!(map_res!(digit, str::from_utf8), FromStr::from_str));
 
+/// Parses a u128 in base-10 format.
+named!(pub parse_u128<u128>,
+       map_res!(map_res!(digit, str::from_utf8), FromStr::from_str));
+
 /// Parses a usize in base-10 format.
 named!(pub parse_usize<usize>,
        map_res!(map_res!(digit, str::from_utf8), FromStr::from_str));

@@ -45,22 +45,22 @@ named!(parse_statm<Statm>,
 /// Parses the provided statm file.
 fn statm_file(file: &mut File) -> Result<Statm> {
     let mut buf = [0; 256]; // A typical statm file is about 25 bytes
-    map_result(parse_statm(try!(read_to_end(file, &mut buf))))
+    map_result(parse_statm(read_to_end(file, &mut buf)?))
 }
 
 /// Returns memory status information for the process with the provided pid.
 pub fn statm(pid: pid_t) -> Result<Statm> {
-    statm_file(&mut try!(File::open(&format!("/proc/{}/statm", pid))))
+    statm_file(&mut File::open(&format!("/proc/{}/statm", pid))?)
 }
 
 /// Returns memory status information for the current process.
 pub fn statm_self() -> Result<Statm> {
-    statm_file(&mut try!(File::open("/proc/self/statm")))
+    statm_file(&mut File::open("/proc/self/statm")?)
 }
 
 /// Returns memory status information from the thread with the provided parent process ID and thread ID.
 pub fn statm_task(process_id: pid_t, thread_id: pid_t) -> Result<Statm> {
-    statm_file(&mut try!(File::open(&format!("/proc/{}/task/{}/statm", process_id, thread_id))))
+    statm_file(&mut File::open(&format!("/proc/{}/task/{}/statm", process_id, thread_id))?)
 }
 
 #[cfg(test)]
