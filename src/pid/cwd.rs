@@ -13,6 +13,12 @@ pub fn cwd(pid: pid_t) -> Result<PathBuf> {
     fs::read_link(format!("/proc/{}/cwd", pid))
 }
 
+/// Gets path of current working directory for the process with the provided
+/// pid and tid.
+pub fn cwd_task(pid: pid_t, tid: pid_t) -> Result<PathBuf> {
+    fs::read_link(format!("/proc/{}/task/{}/cwd", pid, tid))
+}
+
 /// Gets path of current working directory for the current process.
 pub fn cwd_self() -> Result<PathBuf> {
     fs::read_link("/proc/self/cwd")

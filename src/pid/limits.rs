@@ -77,22 +77,22 @@ named!(parse_limits( &[u8] ) -> Limits,
         tag!("Max realtime priority") >> max_realtime_priority: parse_limit_usize >>
         tag!("Max realtime timeout")  >> max_realtime_timeout: parse_limit_micros >> tag!("us")         >>
         (Limits {
-            max_cpu_time: max_cpu_time,
-            max_file_size: max_file_size,
-            max_data_size: max_data_size,
-            max_stack_size: max_stack_size,
-            max_core_file_size: max_core_file_size,
-            max_resident_set: max_resident_set,
-            max_processes: max_processes,
-            max_open_files: max_open_files,
-            max_locked_memory: max_locked_memory,
-            max_address_space: max_address_space,
-            max_file_locks: max_file_locks,
-            max_pending_signals: max_pending_signals,
-            max_msgqueue_size: max_msgqueue_size,
-            max_nice_priority: max_nice_priority,
-            max_realtime_priority: max_realtime_priority,
-            max_realtime_timeout: max_realtime_timeout,
+            max_cpu_time,
+            max_file_size,
+            max_data_size,
+            max_stack_size,
+            max_core_file_size,
+            max_resident_set,
+            max_processes,
+            max_open_files,
+            max_locked_memory,
+            max_address_space,
+            max_file_locks,
+            max_pending_signals,
+            max_msgqueue_size,
+            max_nice_priority,
+            max_realtime_priority,
+            max_realtime_timeout,
         })
     ))
 );
@@ -160,22 +160,22 @@ pub struct Limits {
 /// Parses the provided limits file.
 fn limits_file(file: &mut File) -> Result<Limits> {
     let mut buf = [0; 2048]; // A typical limits file is about 1350 bytes
-    map_result(parse_limits(try!(read_to_end(file, &mut buf))))
+    map_result(parse_limits(read_to_end(file, &mut buf)?))
 }
 
 /// Returns resource limit information from the process with the provided pid.
 pub fn limits(pid: pid_t) -> Result<Limits> {
-    limits_file(&mut try!(File::open(&format!("/proc/{}/limits", pid))))
+    limits_file(&mut File::open(&format!("/proc/{}/limits", pid))?)
 }
 
 /// Returns resource limit information for the current process.
 pub fn limits_self() -> Result<Limits> {
-    limits_file(&mut try!(File::open("/proc/self/limits")))
+    limits_file(&mut File::open("/proc/self/limits")?)
 }
 
 /// Returns resource limit information from the thread with the provided parent process ID and thread ID.
 pub fn limits_task(process_id: pid_t, thread_id: pid_t) -> Result<Limits> {
-    limits_file(&mut try!(File::open(&format!("/proc/{}/task/{}/limits", process_id, thread_id))))
+    limits_file(&mut File::open(&format!("/proc/{}/task/{}/limits", process_id, thread_id))?)
 }
 
 #[cfg(test)]

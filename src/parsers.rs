@@ -130,6 +130,10 @@ named!(pub parse_u32<u32>,
 named!(pub parse_u64<u64>,
        map_res!(map_res!(digit, str::from_utf8), FromStr::from_str));
 
+/// Parses a u128 in base-10 format.
+named!(pub parse_u128<u128>,
+       map_res!(map_res!(digit, str::from_utf8), FromStr::from_str));
+
 /// Parses a usize in base-10 format.
 named!(pub parse_usize<usize>,
        map_res!(map_res!(digit, str::from_utf8), FromStr::from_str));
@@ -164,10 +168,20 @@ named!(pub parse_u32_octal<u32>,
        map_res!(map_res!(alphanumeric, str::from_utf8),
                 |s| u32::from_str_radix(s, 8)));
 
+/// Parses a u16 in base-8 format.
+named!(pub parse_u16_octal<u16>,
+       map_res!(map_res!(alphanumeric, str::from_utf8),
+                |s| u16::from_str_radix(s, 8)));
+
 /// Parses a u64 in base-16 format.
 named!(pub parse_u64_hex<u64>,
        map_res!(map_res!(alphanumeric, str::from_utf8),
                 |s| u64::from_str_radix(s, 16)));
+
+/// Parses a usize in base-16 format.
+named!(pub parse_usize_hex<usize>,
+       map_res!(map_res!(alphanumeric, str::from_utf8),
+                |s| usize::from_str_radix(s, 16)));
 
 /// Reverses the bits in a byte.
 fn reverse(n: u8) -> u8 {

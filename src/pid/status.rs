@@ -21,6 +21,9 @@ use parsers::{
     parse_u64_hex,
     read_to_end
 };
+
+#[cfg(all(target_os = "android", target_arch = "arm"))]
+use parsers::parse_u16_octal;
 use pid::State;
 
 /// The Secure Computing state of a process.
@@ -175,6 +178,7 @@ pub struct Status {
     pub voluntary_ctxt_switches: u64,
     /// Number of involuntary context switches.
     pub nonvoluntary_ctxt_switches: u64,
+    pub speculation_store_nypass: String,
 }
 
 /// Parse the status state format.
@@ -188,6 +192,9 @@ named!(parse_status_state<State>,
           | tag!("Z (zombie)") => { |_| State::Zombie }));
 
 named!(parse_command<String>,   delimited!(tag!("Name:\t"),      parse_line,         line_ending));
+#[cfg(all(target_os = "android", target_arch = "arm"))]
+named!(parse_umask<mode_t>,     delimited!(tag!("Umask:\t"),     parse_u16_octal,    line_ending));
+#[cfg(not(all(target_os = "android", target_arch = "arm")))]
 named!(parse_umask<mode_t>,     delimited!(tag!("Umask:\t"),     parse_u32_octal,    line_ending));
 named!(parse_state<State>,      delimited!(tag!("State:\t"),     parse_status_state, line_ending));
 named!(parse_pid<pid_t>,        delimited!(tag!("Tgid:\t"),      parse_i32,          line_ending));
@@ -255,8 +262,9 @@ named!(parse_mems_allowed<Box<[u8]> >, delimited!(tag!("Mems_allowed:\t"), parse
 named!(parse_cpus_allowed_list<()>, chain!(tag!("Cpus_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 named!(parse_mems_allowed_list<()>, chain!(tag!("Mems_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 
-named!(parse_voluntary_ctxt_switches<u64>,    delimited!(tag!("voluntary_ctxt_switches:\t"),    parse_u64, line_ending));
-named!(parse_nonvoluntary_ctxt_switches<u64>, delimited!(tag!("nonvoluntary_ctxt_switches:\t"), parse_u64, line_ending));
+named!(parse_speculation_store_nypass<String>, delimited!(tag!("Speculation_Store_Bypass:\t"),   parse_line, line_ending));
+named!(parse_voluntary_ctxt_switches<u64>,     delimited!(tag!("voluntary_ctxt_switches:\t"),    parse_u64,  line_ending));
+named!(parse_nonvoluntary_ctxt_switches<u64>,  delimited!(tag!("nonvoluntary_ctxt_switches:\t"), parse_u64,  line_ending));
 
 /// Parse the status format.
 fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
@@ -327,6 +335,7 @@ fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
                | parse_mems_allowed_list
                | parse_voluntary_ctxt_switches    => { |value| status.voluntary_ctxt_switches    = value }
                | parse_nonvoluntary_ctxt_switches => { |value| status.nonvoluntary_ctxt_switches = value }
+               | parse_speculation_store_nypass   => { |value| status.speculation_store_nypass   = value }
             )
         ),
         { |_| { status }})
@@ -335,22 +344,22 @@ fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
 /// Parses the provided status file.
 fn status_file(file: &mut File) -> Result<Status> {
     let mut buf = [0; 2048]; // A typical status file is about 1000 bytes
-    map_result(parse_status(try!(read_to_end(file, &mut buf))))
+    map_result(parse_status(read_to_end(file, &mut buf)?))
 }
 
 /// Returns memory status information for the process with the provided pid.
 pub fn status(pid: pid_t) -> Result<Status> {
-    status_file(&mut try!(File::open(&format!("/proc/{}/status", pid))))
+    status_file(&mut File::open(&format!("/proc/{}/status", pid))?)
 }
 
 /// Returns memory status information for the current process.
 pub fn status_self() -> Result<Status> {
-    status_file(&mut try!(File::open("/proc/self/status")))
+    status_file(&mut File::open("/proc/self/status")?)
 }
 
 /// Returns memory status information from the thread with the provided parent process ID and thread ID.
 pub fn status_task(process_id: pid_t, thread_id: pid_t) -> Result<Status> {
-    status_file(&mut try!(File::open(&format!("/proc/{}/task/{}/status", process_id, thread_id))))
+    status_file(&mut File::open(&format!("/proc/{}/task/{}/status", process_id, thread_id))?)
 }
 
 #[cfg(test)]

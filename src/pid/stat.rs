@@ -249,77 +249,77 @@ fn parse_stat(input: &[u8]) -> IResult<&[u8], Stat> {
     let (rest, exit_code)             = try_parse!(rest, l!(parse_i32        ));
 
     IResult::Done(rest, Stat {
-        pid                   : pid,
-        command               : command,
-        state                 : state,
-        ppid                  : ppid,
-        pgrp                  : pgrp,
-        session               : session,
-        tty_nr                : tty_nr,
-        tty_pgrp              : tty_pgrp,
-        flags                 : flags,
-        minflt                : minflt,
-        cminflt               : cminflt,
-        majflt                : majflt,
-        cmajflt               : cmajflt,
-        utime                 : utime,
-        stime                 : stime,
-        cutime                : cutime,
-        cstime                : cstime,
-        priority              : priority,
-        nice                  : nice,
-        num_threads           : num_threads,
-        start_time            : start_time,
-        vsize                 : vsize,
-        rss                   : rss,
-        rsslim                : rsslim,
-        start_code            : start_code,
-        end_code              : end_code,
-        startstack            : startstack,
-        kstkeep               : kstkeep,
-        kstkeip               : kstkeip,
-        signal                : signal,
-        blocked               : blocked,
-        sigignore             : sigignore,
-        sigcatch              : sigcatch,
-        wchan                 : wchan,
-        exit_signal           : exit_signal,
-        processor             : processor,
-        rt_priority           : rt_priority,
-        policy                : policy,
-        delayacct_blkio_ticks : delayacct_blkio_ticks,
-        guest_time            : guest_time,
-        cguest_time           : cguest_time,
-        start_data            : start_data,
-        end_data              : end_data,
-        start_brk             : start_brk,
-        arg_start             : arg_start,
-        arg_end               : arg_end,
-        env_start             : env_start,
-        env_end               : env_end,
-        exit_code             : exit_code,
+        pid,
+        command,
+        state,
+        ppid,
+        pgrp,
+        session,
+        tty_nr,
+        tty_pgrp,
+        flags,
+        minflt,
+        cminflt,
+        majflt,
+        cmajflt,
+        utime,
+        stime,
+        cutime,
+        cstime,
+        priority,
+        nice,
+        num_threads,
+        start_time,
+        vsize,
+        rss,
+        rsslim,
+        start_code,
+        end_code,
+        startstack,
+        kstkeep,
+        kstkeip,
+        signal,
+        blocked,
+        sigignore,
+        sigcatch,
+        wchan,
+        exit_signal,
+        processor,
+        rt_priority,
+        policy,
+        delayacct_blkio_ticks,
+        guest_time,
+        cguest_time,
+        start_data,
+        end_data,
+        start_brk,
+        arg_start,
+        arg_end,
+        env_start,
+        env_end,
+        exit_code,
     })
 }
 
 /// Parses the provided stat file.
 fn stat_file(file: &mut File) -> Result<Stat> {
     let mut buf = [0; 1024]; // A typical statm file is about 300 bytes
-    map_result(parse_stat(try!(read_to_end(file, &mut buf))))
+    map_result(parse_stat(read_to_end(file, &mut buf)?))
 }
 
 /// Returns status information for the process with the provided pid.
 pub fn stat(pid: pid_t) -> Result<Stat> {
-    stat_file(&mut try!(File::open(&format!("/proc/{}/stat", pid))))
+    stat_file(&mut File::open(&format!("/proc/{}/stat", pid))?)
 }
 
 /// Returns status information for the current process.
 pub fn stat_self() -> Result<Stat> {
-    stat_file(&mut try!(File::open("/proc/self/stat")))
+    stat_file(&mut File::open("/proc/self/stat")?)
 }
 
 /// Returns status information from the thread with the provided parent process ID and thread ID.
 pub fn stat_task(process_id: pid_t, thread_id: pid_t) -> Result<Stat> {
-    stat_file(&mut try!(File::open(&format!("/proc/{}/task/{}/stat", process_id, thread_id))))
+    stat_file(&mut File::open(&format!("/proc/{}/task/{}/stat", process_id, thread_id))?)
 }
 
 #[cfg(test)]
