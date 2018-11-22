@@ -15,9 +15,11 @@ extern crate libc;
 mod parsers;
 mod unmangle;
 
+mod filesystems;
 mod loadavg;
 pub mod pid;
 pub mod sys;
 pub mod net;
 
+pub use filesystems::{Filesystem, filesystems};
 pub use loadavg::{LoadAvg, loadavg};
