@@ -36,11 +36,11 @@ named!(parse_statm<Statm>,
            digit                 ~ space ~         // lib - unused since linux 2.6
            data: parse_usize     ~ space ~
            digit                 ~ line_ending,    // dt - unused since linux 2.6
-           || { Statm { size: size,
-                        resident: resident,
-                        share: share,
-                        text: text,
-                        data: data } }));
+           || { Statm { size,
+                        resident,
+                        share,
+                        text,
+                        data } }));
 
 /// Parses the provided statm file.
 fn statm_file(file: &mut File) -> Result<Statm> {

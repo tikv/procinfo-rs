@@ -8,6 +8,7 @@ mod stat;
 mod statm;
 mod status;
 mod environ;
+mod io;
 
 pub use pid::cwd::{cwd, cwd_self, cwd_task};
 pub use pid::limits::{Limit, Limits, limits, limits_self, limits_task};
@@ -17,6 +18,7 @@ pub use pid::status::{SeccompMode, Status, status, status_self, status_task};
 pub use pid::stat::{Stat, stat, stat_self, stat_task};
 pub use pid::environ::{Environ, environ, environ_self, environ_task};
 pub use pid::maps::{MemoryMapping, maps, maps_self, maps_task};
+pub use pid::io::{Io, io, io_self, io_task};
 
 /// The state of a process.
 #[derive(Debug, PartialEq, Eq, Hash)]

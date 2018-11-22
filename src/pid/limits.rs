@@ -17,7 +17,7 @@ use parsers::{
     read_to_end
 };
 
-fn parse_limit<P, T>(input: &[u8], value_parser: P) -> IResult<&[u8], Limit<T>>
+fn parse_limit<'a, P, T>(input: &'a [u8], value_parser: P) -> IResult<&'a [u8], Limit<T>>
 where P: Fn(&[u8]) -> IResult<&[u8], T> {
     let parse_field = closure!(&'a [u8], alt!(
          tag!("unlimited") => { |_| None }
@@ -77,22 +77,22 @@ named!(parse_limits( &[u8] ) -> Limits,
         tag!("Max realtime priority") >> max_realtime_priority: parse_limit_usize >>
         tag!("Max realtime timeout")  >> max_realtime_timeout: parse_limit_micros >> tag!("us")         >>
         (Limits {
-            max_cpu_time: max_cpu_time,
-            max_file_size: max_file_size,
-            max_data_size: max_data_size,
-            max_stack_size: max_stack_size,
-            max_core_file_size: max_core_file_size,
-            max_resident_set: max_resident_set,
-            max_processes: max_processes,
-            max_open_files: max_open_files,
-            max_locked_memory: max_locked_memory,
-            max_address_space: max_address_space,
-            max_file_locks: max_file_locks,
-            max_pending_signals: max_pending_signals,
-            max_msgqueue_size: max_msgqueue_size,
-            max_nice_priority: max_nice_priority,
-            max_realtime_priority: max_realtime_priority,
-            max_realtime_timeout: max_realtime_timeout,
+            max_cpu_time,
+            max_file_size,
+            max_data_size,
+            max_stack_size,
+            max_core_file_size,
+            max_resident_set,
+            max_processes,
+            max_open_files,
+            max_locked_memory,
+            max_address_space,
+            max_file_locks,
+            max_pending_signals,
+            max_msgqueue_size,
+            max_nice_priority,
+            max_realtime_priority,
+            max_realtime_timeout,
         })
     ))
 );
