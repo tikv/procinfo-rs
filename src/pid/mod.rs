@@ -8,6 +8,7 @@ mod stat;
 mod statm;
 mod status;
 
+pub use pid::cwd::{cwd, cwd_self};
 pub use pid::io::{Io, io, io_self, io_task};
 pub use pid::limits::{Limit, Limits, limits, limits_self, limits_task};
 pub use pid::mountinfo::{Mountinfo, mountinfo, mountinfo_self, mountinfo_task};
