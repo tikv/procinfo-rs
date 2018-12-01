@@ -178,7 +178,7 @@ pub struct Status {
     pub voluntary_ctxt_switches: u64,
     /// Number of involuntary context switches.
     pub nonvoluntary_ctxt_switches: u64,
-    pub speculation_store_nypass: String,
+    pub speculation_store_bypass: String,
 }
 
 /// Parse the status state format.
@@ -262,7 +262,7 @@ named!(parse_mems_allowed<Box<[u8]> >, delimited!(tag!("Mems_allowed:\t"), parse
 named!(parse_cpus_allowed_list<()>, chain!(tag!("Cpus_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 named!(parse_mems_allowed_list<()>, chain!(tag!("Mems_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 
-named!(parse_speculation_store_nypass<String>, delimited!(tag!("Speculation_Store_Bypass:\t"),   parse_line, line_ending));
+named!(parse_speculation_store_bypass<String>, delimited!(tag!("Speculation_Store_Bypass:\t"),   parse_line, line_ending));
 named!(parse_voluntary_ctxt_switches<u64>,     delimited!(tag!("voluntary_ctxt_switches:\t"),    parse_u64,  line_ending));
 named!(parse_nonvoluntary_ctxt_switches<u64>,  delimited!(tag!("nonvoluntary_ctxt_switches:\t"), parse_u64,  line_ending));
 
@@ -335,7 +335,7 @@ fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
                | parse_mems_allowed_list
                | parse_voluntary_ctxt_switches    => { |value| status.voluntary_ctxt_switches    = value }
                | parse_nonvoluntary_ctxt_switches => { |value| status.nonvoluntary_ctxt_switches = value }
-               | parse_speculation_store_nypass   => { |value| status.speculation_store_nypass   = value }
+               | parse_speculation_store_bypass   => { |value| status.speculation_store_bypass   = value }
             )
         ),
         { |_| { status }})
@@ -425,6 +425,7 @@ mod tests {
                             CapAmb:\t0000000000000000\n\
                             NoNewPrivs:\t0\n\
                             Seccomp:\t0\n\
+                            Speculation_Store_Bypass:\tthread vulnerable\n\
                             Cpus_allowed:\tffff\n\
                             Cpus_allowed_list:\t0-15\n\
                             Mems_allowed:\t00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001\n\
@@ -488,6 +489,7 @@ mod tests {
         assert_eq!(0x0000000000000000, status.cap_ambient);
         assert_eq!(false, status.no_new_privs);
         assert_eq!(SeccompMode::Disabled, status.seccomp);
+        assert_eq!("thread vulnerable".as_bytes(), status.speculation_store_bypass.as_bytes());
         assert_eq!(&[0xff, 0xff, 0x00, 0x00], &*status.cpus_allowed);
         let mems_allowed: &mut [u8] = &mut [0; 64];
         mems_allowed[0] = 0x80;

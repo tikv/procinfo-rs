@@ -1,3 +1,16 @@
+// Copyright 2018 PingCAP, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 //! Concerning the I/O information of a process, from
 //! `/proc/[pid]/io`.
 
@@ -32,27 +45,28 @@ pub struct Io {
 }
 
 named!(opt_space<Option<&[u8]>>, opt!(space));
-named!(parse_rchar<usize>, chain!(opt_space ~ tag!("rchar:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
-named!(parse_wchar<usize>, chain!(opt_space ~ tag!("wchar:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
-named!(parse_syscr<usize>, chain!(opt_space ~ tag!("syscr:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
-named!(parse_syscw<usize>, chain!(opt_space ~ tag!("syscw:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
-named!(parse_read_bytes<usize>, chain!(opt_space ~ tag!("read_bytes:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
-named!(parse_write_bytes<usize>, chain!(opt_space ~ tag!("write_bytes:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
-named!(parse_cancelled_write_bytes<usize>, chain!(opt_space ~ tag!("cancelled_write_bytes:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_rchar<usize>, chain!(tag!("rchar:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_wchar<usize>, chain!(tag!("wchar:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_syscr<usize>, chain!(tag!("syscr:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_syscw<usize>, chain!(tag!("syscw:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_read_bytes<usize>, chain!(tag!("read_bytes:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_write_bytes<usize>, chain!(tag!("write_bytes:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
+named!(parse_cancelled_write_bytes<usize>, chain!(tag!("cancelled_write_bytes:") ~ opt_space ~ s: parse_usize ~ line_ending, || { s }));
 
 fn parse_io(mut input: &[u8]) -> IResult<&[u8], Io> {
     let mut io: Io = Default::default();
     loop {
         let original_len = input.len();
         let (rest, ()) = try_parse!(input,
-         alt!( parse_rchar                 => { |value| io.rchar = value }
-             | parse_wchar                 => { |value| io.wchar = value }
-             | parse_syscr                 => { |value| io.syscr = value }
-             | parse_syscw                 => { |value| io.syscw = value }
-             | parse_read_bytes            => { |value| io.read_bytes = value }
-             | parse_write_bytes           => { |value| io.write_bytes = value }
-             | parse_cancelled_write_bytes => { |value| io.cancelled_write_bytes = value }
-         ));
+            alt!( parse_rchar                 => { |value| io.rchar = value }
+                | parse_wchar                 => { |value| io.wchar = value }
+                | parse_syscr                 => { |value| io.syscr = value }
+                | parse_syscw                 => { |value| io.syscw = value }
+                | parse_read_bytes            => { |value| io.read_bytes = value }
+                | parse_write_bytes           => { |value| io.write_bytes = value }
+                | parse_cancelled_write_bytes => { |value| io.cancelled_write_bytes = value }
+            )
+        );
         let final_len = rest.len();
         if final_len == 0 {
             break IResult::Done(&[], io);
@@ -65,7 +79,7 @@ fn parse_io(mut input: &[u8]) -> IResult<&[u8], Io> {
 
 /// Parses the provided stat file.
 fn io_file(file: &mut File) -> Result<Io> {
-    let mut buf = [0; 1024]; // A typical io file is about 100 bytes
+    let mut buf = [0; 256]; // A typical io file is about 100 bytes
     map_result(parse_io(read_to_end(file, &mut buf)?))
 }
 
@@ -99,12 +113,12 @@ pub mod tests {
     #[test]
     fn test_parse_io() {
         let text = b"rchar: 4685194216
-          wchar: 2920419824
-          syscr: 1687286
-          syscw: 708998
-          read_bytes: 2938340352
-          write_bytes: 2464854016
-          cancelled_write_bytes: 592056320
+wchar: 2920419824
+syscr: 1687286
+syscw: 708998
+read_bytes: 2938340352
+write_bytes: 2464854016
+cancelled_write_bytes: 592056320
 ";
         let io: Io = unwrap(parse_io(text));
         assert_eq!(4685194216, io.rchar);
