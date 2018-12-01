@@ -233,7 +233,7 @@ named!(parse_mountinfo_entry<Mountinfo>,
 fn mountinfo_file(file: &mut File) -> Result<Vec<Mountinfo>> {
     let mut r = Vec::new();
     for line in BufReader::new(file).lines() {
-        let mi = try!(map_result(parse_mountinfo_entry(try!(line).as_bytes())));
+        let mi = map_result(parse_mountinfo_entry(line?.as_bytes()))?;
         r.push(mi);
     }
     Ok(r)
@@ -241,17 +241,17 @@ fn mountinfo_file(file: &mut File) -> Result<Vec<Mountinfo>> {
 
 /// Returns mounts information for the process with the provided pid.
 pub fn mountinfo(pid: pid_t) -> Result<Vec<Mountinfo>> {
-    mountinfo_file(&mut try!(File::open(&format!("/proc/{}/mountinfo", pid))))
+    mountinfo_file(&mut File::open(&format!("/proc/{}/mountinfo", pid))?)
 }
 
 /// Returns mounts information for the current process.
 pub fn mountinfo_self() -> Result<Vec<Mountinfo>> {
-    mountinfo_file(&mut try!(File::open("/proc/self/mountinfo")))
+    mountinfo_file(&mut File::open("/proc/self/mountinfo")?)
 }
 
 /// Returns mounts information from the thread with the provided parent process ID and thread ID.
 pub fn mountinfo_task(process_id: pid_t, thread_id: pid_t) -> Result<Vec<Mountinfo>> {
-    mountinfo_file(&mut try!(File::open(&format!("/proc/{}/task/{}/mountinfo", process_id, thread_id))))
+    mountinfo_file(&mut File::open(&format!("/proc/{}/task/{}/mountinfo", process_id, thread_id))?)
 }
 
 #[cfg(test)]
