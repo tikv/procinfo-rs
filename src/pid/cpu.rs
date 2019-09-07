@@ -135,7 +135,7 @@ pub mod tests {
 
     /// Test parsing a single mountinfo entry (positive check).
     #[test]
-    fn test_parse_cputimeinfo_entry() {
+    fn test_parse_cpu_time_info_entry() {
         let entry =
             b"cpu0 49663 0 40234 104757317 542691 4420 39572 0 0 0";
         let got_mi = parse_cpu_info(entry).unwrap().1;
