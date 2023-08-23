@@ -184,6 +184,7 @@ pub struct Status {
     /// Number of involuntary context switches.
     pub nonvoluntary_ctxt_switches: u64,
     pub speculation_store_bypass: String,
+    pub speculation_indirect_branch: String,
 }
 
 /// Parse the status state format.
@@ -267,6 +268,7 @@ named!(parse_cpus_allowed_list<()>, chain!(tag!("Cpus_allowed_list:\t") ~ not_li
 named!(parse_mems_allowed_list<()>, chain!(tag!("Mems_allowed_list:\t") ~ not_line_ending ~ line_ending, || { () }));
 
 named!(parse_speculation_store_bypass<String>, delimited!(tag!("Speculation_Store_Bypass:\t"),   parse_line, line_ending));
+named!(parse_speculation_indirect_branch<String>, delimited!(tag!("SpeculationIndirectBranch:\t"),   parse_line, line_ending));
 named!(parse_voluntary_ctxt_switches<u64>,     delimited!(tag!("voluntary_ctxt_switches:\t"),    parse_u64,  line_ending));
 named!(parse_nonvoluntary_ctxt_switches<u64>,  delimited!(tag!("nonvoluntary_ctxt_switches:\t"), parse_u64,  line_ending));
 
@@ -342,6 +344,7 @@ fn parse_status(i: &[u8]) -> IResult<&[u8], Status> {
                | parse_voluntary_ctxt_switches    => { |value| status.voluntary_ctxt_switches    = value }
                | parse_nonvoluntary_ctxt_switches => { |value| status.nonvoluntary_ctxt_switches = value }
                | parse_speculation_store_bypass   => { |value| status.speculation_store_bypass   = value }
+               | parse_speculation_indirect_branch   => { |value| status.speculation_indirect_branch   = value }
             )
         ),
         { |_| { status }})
@@ -434,6 +437,7 @@ mod tests {
                             Seccomp:\t0\n\
                             Seccomp_filters:\t0\n\
                             Speculation_Store_Bypass:\tthread vulnerable\n\
+                            SpeculationIndirectBranch:\tconditional enabled\n\
                             Cpus_allowed:\tffff\n\
                             Cpus_allowed_list:\t0-15\n\
                             Mems_allowed:\t00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000000,00000001\n\
@@ -500,6 +504,7 @@ mod tests {
         assert_eq!(SeccompMode::Disabled, status.seccomp);
         assert_eq!(0, status.seccomp_filters);
         assert_eq!("thread vulnerable".as_bytes(), status.speculation_store_bypass.as_bytes());
+        assert_eq!("conditional enabled".as_bytes(), status.speculation_indirect_branch.as_bytes());
         assert_eq!(&[0xff, 0xff, 0x00, 0x00], &*status.cpus_allowed);
         let mems_allowed: &mut [u8] = &mut [0; 64];
         mems_allowed[0] = 0x80;
